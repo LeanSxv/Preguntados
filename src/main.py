@@ -1,9 +1,10 @@
 import pygame
 import sys
+import os
 from pygame.locals import *
 from variables import *
 from funciones import *
-import os
+from archivos import listar_csv, generar_json
 
 pygame.init()
 os.system("cls")
@@ -18,6 +19,7 @@ escena = "Menu Principal"
 # fuentes
 fuente_titulo_menu = pygame.font.Font("./assets/menu/This Cafe.ttf", 100)
 fuente_jugar = pygame.font.SysFont("Comic Sans MS", 38)
+fuente_juego = pygame.font.SysFont("Verdana", 16)
 
 # carga imagenes
 # menu
@@ -46,6 +48,9 @@ bloque_3_juego_rect = pygame.Rect(CENTER_X - widht_bloque_juego // 2, distancia_
 bloque_4_juego_rect = pygame.Rect(CENTER_X - widht_bloque_juego // 2, distancia_bloques + bloque_3_juego_rect.bottom, widht_bloque_juego, height_bloque_juego)
 bloque_5_juego_rect = pygame.Rect(CENTER_X - widht_bloque_juego // 2, distancia_bloques + bloque_4_juego_rect.bottom, widht_bloque_juego, height_bloque_juego)
 bloque_6_juego_rect = pygame.Rect(CENTER_X - widht_bloque_juego // 2, HEIGHT - height_bloque_juego - 10, widht_bloque_juego, height_bloque_juego)
+width_rect_segundos = 20
+height_rect_segundos = height_bloque_juego // 1.25
+segundos_rect = pygame.Rect(bloque_1_juego_rect.centerx - width_rect_segundos // 2, bloque_1_juego_rect.centery - height_rect_segundos // 2, width_rect_segundos, height_rect_segundos)
 
 
 # configuracion sonidos
@@ -68,7 +73,6 @@ tick_1s = pygame.USEREVENT + 0
 tick_2s = pygame.USEREVENT + 1
 pygame.time.set_timer(tick_1s,1000)
 pygame.time.set_timer(tick_2s,2000)
-
 
 # settings juego
 tiempo_para_responder = 15
@@ -121,6 +125,7 @@ def ejecutar_juego():
     global escena
     global muteado
     global segundos
+    lista_preguntas = listar_csv("preguntas.csv")
     pantalla.fill(NEGRO)
     for event in pygame.event.get():
         if event.type == pygame.QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
@@ -135,13 +140,16 @@ def ejecutar_juego():
             print(segundos)
     pantalla.blit(fondo_juego, (0, 0))
     bloque_sonido = pygame.draw.rect(pantalla, color_boton_sonido, boton_sonido_rect, 0, 10)
-    pygame.draw.rect(pantalla, NEGRO, boton_sonido_rect, 2, 10)
-    pygame.draw.rect(pantalla, BLANCO, bloque_1_juego_rect, 0, 2)
-    pygame.draw.rect(pantalla, BLANCO, bloque_2_juego_rect, 0, 10)
-    pygame.draw.rect(pantalla, BLANCO, bloque_3_juego_rect, 0, 10)
-    pygame.draw.rect(pantalla, BLANCO, bloque_4_juego_rect, 0, 10)
-    pygame.draw.rect(pantalla, BLANCO, bloque_5_juego_rect, 0, 10)
-    pygame.draw.rect(pantalla, BLANCO, bloque_6_juego_rect, 0, 2)
+    borde_bloque_sonido = pygame.draw.rect(pantalla, BLANCO, boton_sonido_rect, 2, 10)
+    bloque_superior = pygame.draw.rect(pantalla, BLANCO, bloque_1_juego_rect, 0, 2)
+    bloque_segundos = pygame.draw.rect(pantalla, NEGRO, segundos_rect)
+    bloque_segundos = pygame.draw.rect(pantalla, AZUL, segundos_rect, 2, 25)
+    bloque_pregunta = pygame.draw.rect(pantalla, BLANCO, bloque_2_juego_rect, 0, 10)
+    bloque_respuesta_a = pygame.draw.rect(pantalla, BLANCO, bloque_3_juego_rect, 0, 10)
+    bloque_respuesta_b = pygame.draw.rect(pantalla, BLANCO, bloque_4_juego_rect, 0, 10)
+    bloque_respuesta_c = pygame.draw.rect(pantalla, BLANCO, bloque_5_juego_rect, 0, 10)
+    bloque_inferior = pygame.draw.rect(pantalla, BLANCO, bloque_6_juego_rect, 0, 2)
+
     if muteado:
         pantalla.blit(mute, bloque_sonido.topleft)
         sonido_fondo_juego.set_volume(0)
