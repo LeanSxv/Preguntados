@@ -1,16 +1,18 @@
 import json
+import os
 
 def listar_csv(nombre_archivo:str, separador = ','):
     lista = []
     lista_claves = []
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     with open(nombre_archivo, "r", encoding="utf-8") as archivo:
         primer_linea = archivo.readline()
         lista_claves = primer_linea.replace("\n", "").split(separador)
         for linea in archivo:
-            lista_campos = linea.replace("\n", "").split(",")
+            lista_valores = linea.replace("\n", "").split(",")
             diccionario = {}
             for i in range(len(lista_claves)):
-                diccionario[lista_claves[i]] = lista_campos[i]
+                diccionario[lista_claves[i]] = lista_valores[i]
             lista.append(diccionario)
     return lista
 

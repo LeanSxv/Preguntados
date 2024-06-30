@@ -1,6 +1,7 @@
 import pygame
 from random import randrange
 from variables import *
+from archivos import listar_csv
 
 def color_rgb_aleatorio():
     return (randrange(256), randrange(256), randrange(256))
@@ -29,4 +30,6 @@ def punto_colicion_rectangulo(coordenada, rect):
     x, y = coordenada
     return x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
 
+def seleccionar_pregunta(lista_preguntas):
+    return lista_preguntas[randrange(len(lista_preguntas))]
 
