@@ -1,7 +1,6 @@
 import pygame
 from random import randrange
 from variables import *
-from archivos import listar_csv
 
 def color_rgb_aleatorio():
     return (randrange(256), randrange(256), randrange(256))
@@ -10,7 +9,7 @@ def terminar():
     pygame.quit()
     exit()
     
-def mostrar_texto(superficie, texto, fuente, coordenadas, color_fuente, color_fondo=NEGRO):
+def mostrar_texto(superficie, texto, fuente, coordenadas, color_fuente, color_fondo= None):
     # Renderiza el texto con la fuente y los colores especificados
     sup_texto = fuente.render(texto, True, color_fuente, color_fondo)
     # Obtiene el rectángulo del texto renderizado

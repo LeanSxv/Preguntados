@@ -10,6 +10,7 @@ muteado = False
 
 NEGRO = (0, 0, 0)
 VERDE = (0, 255, 0)
+VERDE_CLARO = (105, 200, 105)
 VERDE_OSCURO = (0, 120, 10)
 AMARILLO = (255, 255, 0)
 BLANCO = (255, 255, 255)
@@ -17,7 +18,6 @@ VIOLETA = (130, 0, 130)
 AZUL = (0, 0, 255)
 ROJO = (255, 0, 0)
 GRIS_CLARO = (225, 225, 225)
-color_boton_sonido = (230, 170, 60)
 color_boton_jugar = (40, 200, 255)
 
 

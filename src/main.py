@@ -9,6 +9,11 @@ from archivos import listar_csv, generar_json
 pygame.init()
 os.system('cls')
 
+def terminar():
+    pygame.quit()
+    exit()
+
+
 # configuracion ventana
 pantalla = pygame.display.set_mode(SIZE_SCREEN) # tamano
 pygame.display.set_caption('Preguntados') # titulo
@@ -18,9 +23,14 @@ pygame.display.set_icon(icono) # icono
 escena = 'Menu Principal'
 
 # fuentes
-fuente_titulo_menu = pygame.font.Font('./assets/menu/This Cafe.ttf', 100)
+# menu
 fuente_jugar_menu = pygame.font.SysFont('Comic Sans MS', 38)
+# juego
 fuente_juego = pygame.font.SysFont('Verdana', 16)
+# fin pregunta
+fuente_titulo_fin_pregunta = pygame.font.SysFont('Segoe Print', 25, True)
+fuente_continuar_fin_pregunta = pygame.font.SysFont('Comic Sans MS', 20)
+
 
 # carga imagenes
 # menu
@@ -33,8 +43,10 @@ imagen_titulo = pygame.image.load('./assets/menu/titulo.png')
 imagen_fondo_juego = pygame.image.load('./assets/juego/fondo.jpeg')
 fondo_juego = pygame.transform.scale(imagen_fondo_juego, SIZE_SCREEN)
 imagen_no_powerups = pygame.image.load('./assets/juego/logo_nombre.webp')
-# fin juego
-imagen_fondo_fin_juego = pygame.image.load('./assets/fin_juego/fondo.jpg')
+# fin pregunta
+imagen_fondo_fin_pregunta = pygame.image.load('./assets/fin_juego/fondo.jpg')
+imagen_personaje_bueno_fin_pregunta = pygame.image.load('./assets/fin_juego/feliz.png')
+imagen_personaje_malo_fin_pregunta = pygame.image.load('./assets/fin_juego/enojado.png')
 
 
 # rects
@@ -47,7 +59,6 @@ titulo_width = 650
 titulo_height = 100
 titulo_rect = pygame.Rect(CENTER_X - titulo_width // 2, 60, titulo_width, titulo_height)
 titulo = pygame.transform.scale(imagen_titulo, (titulo_rect.width, titulo_rect.height))
-
 # juego
 widht_bloque_juego = WIDTH // 1.5
 height_bloque_juego = HEIGHT // 12
@@ -64,11 +75,18 @@ no_powerups = pygame.transform.scale(imagen_no_powerups, (width_no_powerups ,hei
 width_rect_segundos = 40
 height_rect_segundos = 40
 segundos_rect = pygame.Rect(bloque_1_juego_rect.centerx - width_rect_segundos // 2, bloque_1_juego_rect.centery - height_rect_segundos // 2, width_rect_segundos, height_rect_segundos)
-# fin juego
-width_bloque_fondo_fin_juego = WIDTH // 2
-height_bloque_fondo_fin_juego = HEIGHT // 3
-bloque_fondo_fin_juego = pygame.Rect(CENTER_X - width_bloque_fondo_fin_juego // 2, CENTER_Y - height_bloque_fondo_fin_juego // 2, width_bloque_fondo_fin_juego, height_bloque_fondo_fin_juego)
-fondo_fin_juego = pygame.transform.scale(imagen_fondo_fin_juego, (bloque_fondo_fin_juego.width, bloque_fondo_fin_juego.height))
+# fin pregunta
+width_bloque_fondo_fin_pregunta = WIDTH // 2
+height_bloque_fondo_fin_pregunta = HEIGHT // 3
+bloque_fondo_fin_pregunta = pygame.Rect(CENTER_X - width_bloque_fondo_fin_pregunta // 2, CENTER_Y - height_bloque_fondo_fin_pregunta // 2, width_bloque_fondo_fin_pregunta, height_bloque_fondo_fin_pregunta)
+fondo_fin_pregunta = pygame.transform.scale(imagen_fondo_fin_pregunta, (bloque_fondo_fin_pregunta.width, bloque_fondo_fin_pregunta.height))
+widht_personaje = 100
+height_personaje = 100
+personaje_bueno = pygame.transform.scale(imagen_personaje_bueno_fin_pregunta, (widht_personaje, height_personaje))
+personaje_malo = pygame.transform.scale(imagen_personaje_malo_fin_pregunta, (widht_personaje, height_personaje))
+width_bloque_continuar = 150
+height_bloque_continuar = 30
+bloque_continuar = pygame.Rect(bloque_fondo_fin_pregunta.centerx - width_bloque_continuar // 2, bloque_fondo_fin_pregunta.centery + height_personaje // 2 + height_bloque_continuar // 2, width_bloque_continuar, height_bloque_continuar)
 
 # configuracion sonidos
 pygame.mixer.init()
@@ -82,7 +100,7 @@ sonido_click_boton_jugar = pygame.mixer.Sound('./assets/menu/click_jugar.mp3')
 sonido_click_boton_jugar.set_volume(0.2)
 # sonidos juego
 sonido_fondo_juego = pygame.mixer.Sound('./assets/juego/reloj.mp3')
-sonido_fondo_juego.set_volume(1)
+sonido_fondo_juego.set_volume(0.1)
 sonido_comienzo_juego = pygame.mixer.Sound('./assets/juego/despliegue_pregunta.mp3')
 sonido_comienzo_juego.set_volume(0.5)
 sonido_time_out_juego = pygame.mixer.Sound('./assets/juego/time_out.mp3')
@@ -100,8 +118,7 @@ pygame.time.set_timer(tick_2s,2000)
 
 # settings juego
 milisegundos = 0
-tiempo_para_responder = 7
-segundos = tiempo_para_responder
+tiempo_para_responder = 15
 lista_preguntas = listar_csv('preguntas.csv')
 pregunta = seleccionar_pregunta(lista_preguntas)
 puntaje = 0
@@ -120,7 +137,6 @@ def ejecutar_menu():
             if punto_colicion_rectangulo(coordenada_click, boton_jugar_rect):
                 sonido_fondo_menu.stop()
                 sonido_click_boton_jugar.play()
-                sonido_comienzo_juego.play()
                 escena = 'Juego'
                 break
             elif punto_colicion_rectangulo(coordenada_click, boton_sonido_rect):
@@ -138,14 +154,11 @@ def ejecutar_menu():
         sonido_fondo_menu.set_volume(0)
         sonido_click_boton_menu.set_volume(0)
         sonido_click_boton_jugar.set_volume(0)
-        sonido_comienzo_juego.set_volume(0)
     else:
         pantalla.blit(sonido, boton_sonido_rect.topleft)
         sonido_fondo_menu.set_volume(0.10)
         sonido_click_boton_menu.set_volume(0.3)
         sonido_click_boton_jugar.set_volume(0.2)
-        sonido_comienzo_juego.set_volume(0.5)
-
     pygame.display.flip() # Muestro la pantalla
 
 def ejecutar_juego():
@@ -156,6 +169,8 @@ def ejecutar_juego():
     global milisegundos
     global lista_preguntas
     global contesto_bien
+    segundos = tiempo_para_responder
+    sonido_comienzo_juego.play()
     pregunta = seleccionar_pregunta(lista_preguntas)
     color_bloque_reespuesta_a = BLANCO
     color_bloque_reespuesta_b = BLANCO
@@ -220,7 +235,7 @@ def ejecutar_juego():
         pantalla.blit(fondo_juego, (0, 0))
         borde_bloque_sonido = pygame.draw.rect(pantalla, NEGRO, boton_sonido_rect, 2, 10)
         bloque_superior = pygame.draw.rect(pantalla, BLANCO, bloque_1_juego_rect, 0, 2)
-        bloque_segundos_circulo = pygame.draw.rect(pantalla, NEGRO, segundos_rect, 2, 25)
+        bloque_segundos_circulo = pygame.draw.rect(pantalla, NEGRO, segundos_rect, 5, 25)
         texto_segundos = f'{segundos}'
         if not texto_segundos.isdigit():
             texto_segundos = ';_;'
@@ -238,13 +253,15 @@ def ejecutar_juego():
 
         if muteado:
             pantalla.blit(mute, boton_sonido_rect.topleft)
+            sonido_comienzo_juego.set_volume(0)
             sonido_fondo_juego.set_volume(0)
             sonido_correcto_juego.set_volume(0)
             sonido_incorrecto_juego.set_volume(0)
             sonido_time_out_juego.set_volume(0)
         else:
             pantalla.blit(sonido, boton_sonido_rect.topleft)
-            sonido_fondo_juego.set_volume(1)
+            sonido_comienzo_juego.set_volume(0.5)
+            sonido_fondo_juego.set_volume(0.1)
             sonido_correcto_juego.set_volume(0.5)
             sonido_incorrecto_juego.set_volume(0.5)
             sonido_time_out_juego.set_volume(0.5)
@@ -262,14 +279,68 @@ def ejecutar_fin_pregunta():
     global puntaje
     global vidas
     global contesto_bien
-    
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
-            funcionando = False
-    fondo = pygame.draw.rect(pantalla, GRIS_CLARO, bloque_fondo_fin_juego, border_radius= 10)
-    pantalla.blit(fondo_fin_juego, fondo.topleft)
-    pygame.display.flip()
+    fin_pregunta = True
+    if sonido_fondo_juego:
+        sonido_fondo_juego.stop()
+    match contesto_bien:
+        case True:
+            puntaje += 100
+            imagen_personaje = personaje_bueno
+            titulo_string = '¡BIEN HECHO!'
+            color_titulo = VERDE
+        case _:
+            vidas -= 1
+            imagen_personaje = personaje_malo
+            match contesto_bien:
+                case False:
+                    titulo_string = 'LA PROXIMA SERA...'
+                    color_titulo = ROJO
+                case None:
+                    titulo_string = 'TE QUEDASTE SIN TIEMPO'
+                    color_titulo = AMARILLO
+    print(vidas)
+    print(puntaje)
+    while fin_pregunta:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
+                terminar()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                coordenada_click = event.pos
+                if punto_colicion_rectangulo(coordenada_click, boton_continuar):
+                    fin_pregunta = False
+        pantalla.blit(fondo_fin_pregunta, bloque_fondo_fin_pregunta.topleft)
+        mostrar_texto(pantalla, titulo_string, fuente_titulo_fin_pregunta, (bloque_fondo_fin_pregunta.centerx, bloque_fondo_fin_pregunta.top + 25), color_titulo, None)
+        pantalla.blit(imagen_personaje, (bloque_fondo_fin_pregunta.centerx - widht_personaje // 2, bloque_fondo_fin_pregunta.centery - height_personaje // 2))
+        boton_continuar = pygame.draw.rect(pantalla, VERDE_CLARO, bloque_continuar, 0, 10)
+        mostrar_texto(pantalla, 'CONTINUAR', fuente_continuar_fin_pregunta, bloque_continuar.center, BLANCO, None)
+        pygame.display.flip()
+    if vidas > 0:
+        escena = 'Juego'
+    else:
+        escena = 'Game Over'
 
+def ejecutar_game_over():
+    global funcionando
+    global escena
+    global muteado
+    global puntaje
+    global vidas
+    print(puntaje)
+    not_continuar = True
+    while not_continuar:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
+                terminar()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                coordenada_click = event.pos
+                if punto_colicion_rectangulo(coordenada_click, boton_continuar):
+                    not_continuar = False
+        pantalla.fill(NEGRO)
+        boton_continuar = pygame.draw.rect(pantalla, VERDE_CLARO, bloque_continuar, 0, 10)
+        mostrar_texto(pantalla, 'CONTINUAR', fuente_continuar_fin_pregunta, bloque_continuar.center, BLANCO, None)
+        pygame.display.flip()
+    vidas = 3
+    escena = 'Menu Principal'
 
 while funcionando:
     lista_preguntas = listar_csv('preguntas.csv')
@@ -284,8 +355,7 @@ while funcionando:
         case 'Fin Pregunta':
             ejecutar_fin_pregunta()
         case 'Game Over':
-            # ejecutar_game_over()
-            pass
+            ejecutar_game_over()
 
 pygame.quit()
 sys.exit()
