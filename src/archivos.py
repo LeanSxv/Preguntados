@@ -18,7 +18,7 @@ def listar_csv(nombre_archivo:str, separador = ','):
 
 def generar_csv(nombre_archivo:str, lista:list):
     lista_claves = list(lista[0].keys())
-    cabecera = ",".join(lista_claves)
+    cabecera = ",".join(lista_claves) 
     with open(nombre_archivo, "w") as archivo:
         archivo.write(cabecera + "\n")
         for elemento in lista:

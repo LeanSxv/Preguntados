@@ -28,3 +28,5 @@ boton_configuracion_height = HEIGHT * 0.1
 
 boton_jugar_width = WIDTH // 3
 boton_jugar_height = HEIGHT // 10
+
+indice_preguntas = 0

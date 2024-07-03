@@ -1,5 +1,5 @@
 import pygame
-from random import randrange
+from random import randrange, shuffle
 from variables import *
 
 def color_rgb_aleatorio():
@@ -29,6 +29,16 @@ def punto_colicion_rectangulo(coordenada, rect):
     x, y = coordenada
     return x >= rect.left and x <= rect.right and y >= rect.top and y <= rect.bottom
 
-def seleccionar_pregunta(lista_preguntas):
-    return lista_preguntas[randrange(len(lista_preguntas))]
+def ordenar_lista_orden_aleatorio(lista: list):
+    shuffle(lista)
+
+def seleccionar_pregunta(lista_de_preguntas):
+    global indice_preguntas
+    if indice_preguntas == 0:
+        ordenar_lista_orden_aleatorio(lista_de_preguntas)
+    pregunta = lista_de_preguntas[indice_preguntas]
+    indice_preguntas += 1
+    if indice_preguntas >= len(lista_de_preguntas):
+        indice_preguntas = 0
+    return pregunta
 
