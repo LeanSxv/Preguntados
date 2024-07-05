@@ -5,7 +5,7 @@ def listar_csv(nombre_archivo:str, separador = ','):
     lista = []
     lista_claves = []
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    with open(nombre_archivo, "r", encoding="utf-8") as archivo:
+    with open(nombre_archivo, "r") as archivo:
         primer_linea = archivo.readline()
         lista_claves = primer_linea.replace("\n", "").split(separador)
         for linea in archivo:

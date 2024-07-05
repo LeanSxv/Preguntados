@@ -4,7 +4,7 @@ import os
 from pygame.locals import *
 from variables import *
 from funciones import *
-from archivos import listar_csv, generar_json
+from archivos import *
 
 pygame.init()
 
@@ -42,6 +42,8 @@ fondo_menu = pygame.transform.scale(imagen_fondo_menu, SIZE_SCREEN)
 imagen_sonido = pygame.image.load('./assets/menu/sonido.png')
 imagen_mute = pygame.image.load('./assets/menu/mute.png')
 imagen_titulo = pygame.image.load('./assets/menu/titulo.png')
+
+imagen_preguntas = pygame.image.load('./assets/menu/preguntas.png')
 # juego
 imagen_fondo_juego = pygame.image.load('./assets/juego/fondo.jpeg')
 fondo_juego = pygame.transform.scale(imagen_fondo_juego, SIZE_SCREEN)
@@ -73,6 +75,70 @@ for i in range(len(lista_imagenes_bien)):
     lista_imagenes_bien[i] = pygame.transform.scale(lista_imagenes_bien[i], tamano_personaje)
 
 
+class CuadroDeTexto:
+    def __init__(self, x, y, ancho, alto, color_fondo, color_borde, color_texto):
+        self.x = x
+        self.y = y
+        self.ancho = ancho
+        self.alto = alto
+        self.color_fondo = color_fondo
+        self.color_borde = color_borde
+        self.color_texto = color_texto
+        self.texto = ""
+        self.texto_actual = ""  # Texto que se está escribiendo
+        self.fuente = fuente_juego
+        self.rectangulo = Rect(self.x, self.y, self.ancho, self.alto)
+        self.activo = False  # Indica si el cuadro está activo (con el foco)
+        self.cursor = "|"  # Símbolo del cursor
+        self.posicion_cursor = 0  # Posición del cursor en el texto
+
+    def dibujar(self, pantalla):
+        # Dibujar el fondo del cuadro
+        pygame.draw.rect(pantalla, self.color_fondo, self.rectangulo)
+
+        # Dibujar el borde del cuadro
+        pygame.draw.rect(pantalla, self.color_borde, self.rectangulo, 1)
+
+        # Dibujar el texto
+        texto_renderizado = self.fuente.render(self.texto, True, self.color_texto)
+        rect_texto = texto_renderizado.get_rect(left=self.x, top=self.y + 5)  # Ajustar posición del texto
+        pantalla.blit(texto_renderizado, rect_texto)
+
+        # Dibujar el cursor si el cuadro está activo
+        # if self.activo:
+        #     cursor_renderizado = self.fuente.render(self.cursor, True, self.color_texto)
+        #     cursor_rect = cursor_renderizado.get_rect(
+        #         left=self.x + self.posicion_cursor * self.fuente.size + 5,  # Ajustar posición del cursor
+        #         top=self.y + 5
+        #     )
+        #     pantalla.blit(cursor_renderizado, cursor_rect)
+
+    def actualizar(self, evento):
+        if self.activo:
+            if evento.type == KEYDOWN:
+                # Tecla retroceso
+                if evento.key == K_BACKSPACE:
+                    if self.posicion_cursor > 0:
+                        self.texto = self.texto[:self.posicion_cursor - 1] + self.texto[self.posicion_cursor:]
+                        self.posicion_cursor -= 1
+
+                # Tecla suprimir
+                elif evento.key == K_DELETE:
+                    if self.posicion_cursor < len(self.texto):
+                        self.texto = self.texto[:self.posicion_cursor] + self.texto[self.posicion_cursor + 1:]
+
+                # Otras teclas para agregar caracteres
+                elif evento.unicode:
+                    self.texto = self.texto[:self.posicion_cursor] + evento.unicode + self.texto[self.posicion_cursor:]
+                    self.posicion_cursor += 1
+
+            # Teclas de movimiento del cursor
+            if evento.type == KEYDOWN:
+                if evento.key == K_LEFT and self.posicion_cursor > 0:
+                    self.posicion_cursor -= 1
+                elif evento.key == K_RIGHT and self.posicion_cursor < len(self.texto):
+                    self.posicion_cursor += 1
+
 
 # rects
 # menu
@@ -84,6 +150,25 @@ titulo_width = 650
 titulo_height = 100
 titulo_rect = pygame.Rect(CENTER_X - titulo_width // 2, 60, titulo_width, titulo_height)
 titulo = pygame.transform.scale(imagen_titulo, (titulo_rect.width, titulo_rect.height))
+
+boton_preguntas_rect = pygame.Rect(20, 520, 40, 40)
+icono_preguntas = pygame.transform.scale(imagen_preguntas, (boton_preguntas_rect.width, boton_preguntas_rect.height))
+texto_pregunta = CuadroDeTexto(10, 100, 750, 25, GRIS_CLARO, NEGRO, NEGRO)
+texto_respuesta_1 = CuadroDeTexto(200, 140, 200, 25, GRIS_CLARO, NEGRO, NEGRO)
+texto_respuesta_2 = CuadroDeTexto(200, 180, 200, 25, GRIS_CLARO, NEGRO, NEGRO)
+texto_respuesta_3 = CuadroDeTexto(200, 220, 200, 25, GRIS_CLARO, NEGRO, NEGRO)
+texto_respuesta_correcta = CuadroDeTexto(200, 280, 100, 25, GRIS_CLARO, NEGRO, NEGRO)
+
+label_preguntas = pygame.Rect(35, 50, 100, 25)
+label_respuestas_1 = pygame.Rect(25, 140, 100, 25)
+label_respuestas_2 = pygame.Rect(25, 180, 100, 25)
+label_respuestas_3 = pygame.Rect(25, 220, 100, 25)
+label_respuesta_correcta = pygame.Rect(35, 280, 100, 25)
+
+width_bloque_cargar = 150
+height_bloque_cargar = 30
+bloque_cargar = pygame.Rect(25, 320, width_bloque_cargar, height_bloque_cargar)
+
 # juego
 widht_bloque_juego = WIDTH // 1.5
 height_bloque_juego = HEIGHT // 12
@@ -166,10 +251,18 @@ def ejecutar_menu():
                 elif punto_colicion_rectangulo(coordenada_click, boton_sonido_rect):
                     sonido_click_boton_menu.play()
                     muteado = not muteado
+                elif punto_colicion_rectangulo(coordenada_click, boton_preguntas_rect):
+                    sonido_fondo_menu.stop()
+                    escena = "Preguntas"
+
         pantalla.blit(fondo_menu, (0, 0))
         pantalla.blit(titulo, titulo_rect.topleft)
         bloque_jugar = pygame.draw.rect(pantalla, color_boton_jugar, boton_jugar_rect, 0, 10)
         pygame.draw.rect(pantalla, NEGRO, boton_jugar_rect, 2, 10) # borde bloque "JUGAR"
+
+        pygame.draw.rect(pantalla, NEGRO, boton_preguntas_rect, 2, 10)
+        pantalla.blit(icono_preguntas, boton_preguntas_rect.topleft)
+
         mostrar_texto(pantalla, 'JUGAR', fuente_jugar_menu, bloque_jugar.center, BLANCO, None)
         pygame.draw.rect(pantalla, NEGRO, boton_sonido_rect, 2, 10) # borde bloque sonido
         if muteado:
@@ -339,6 +432,109 @@ def ejecutar_fin_pregunta():
         mostrar_texto(pantalla, 'CONTINUAR', fuente_continuar_fin_pregunta, bloque_continuar.center, BLANCO, None)
         pygame.display.flip()
 
+def ejecutar_preguntas():
+    global escena
+    global muteado
+    global puntaje
+    global vidas
+    while escena == 'Preguntas':
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or event.type == KEYDOWN and event.key == K_ESCAPE:
+                terminar()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                coordenada_click = event.pos
+                if punto_colicion_rectangulo(coordenada_click, boton_continuar):
+                    escena = 'Menu Principal'
+                
+                if punto_colicion_rectangulo(coordenada_click, boton_cargar):
+                    diccionario = {}
+                    diccionario["pregunta"] = texto_pregunta.texto
+                    diccionario["respuesta_a"] = texto_respuesta_1.texto
+                    diccionario["respuesta_b"] = texto_respuesta_2.texto
+                    diccionario["respuesta_c"] = texto_respuesta_3.texto
+                    diccionario["respuesta_correcta"] = texto_respuesta_correcta.texto
+                    if (diccionario["pregunta"].strip() != "" and 
+                        diccionario["respuesta_a"] != "" and
+                        diccionario["respuesta_b"] != "" and
+                        diccionario["respuesta_c"] != "" and
+                        diccionario["respuesta_correcta"] != ""):
+                        if (diccionario["respuesta_correcta"] == "a" or
+                            diccionario["respuesta_correcta"] == "b" or
+                            diccionario["respuesta_correcta"] == "c"):
+                            
+                            lista_preguntas.append(diccionario)
+                            generar_csv("preguntas.csv", lista_preguntas)
+
+                if punto_colicion_rectangulo(coordenada_click, texto_pregunta.rectangulo):
+                    texto_pregunta.activo = True
+                    texto_respuesta_1.activo = False
+                    texto_respuesta_2.activo = False
+                    texto_respuesta_3.activo = False
+                    texto_respuesta_correcta.activo = False
+                
+                if punto_colicion_rectangulo(coordenada_click, texto_respuesta_1.rectangulo):
+                    texto_pregunta.activo = False
+                    texto_respuesta_1.activo = True
+                    texto_respuesta_2.activo = False
+                    texto_respuesta_3.activo = False
+                    texto_respuesta_correcta.activo = False
+                
+                if punto_colicion_rectangulo(coordenada_click, texto_respuesta_2.rectangulo):
+                    texto_pregunta.activo = False
+                    texto_respuesta_1.activo = False
+                    texto_respuesta_2.activo = True
+                    texto_respuesta_3.activo = False
+                    texto_respuesta_correcta.activo = False
+
+                if punto_colicion_rectangulo(coordenada_click, texto_respuesta_3.rectangulo):
+                    texto_pregunta.activo = False
+                    texto_respuesta_1.activo = False
+                    texto_respuesta_2.activo = False
+                    texto_respuesta_3.activo = True
+                    texto_respuesta_correcta.activo = False
+                
+                if punto_colicion_rectangulo(coordenada_click, texto_respuesta_correcta.rectangulo):
+                    texto_pregunta.activo = False
+                    texto_respuesta_1.activo = False
+                    texto_respuesta_2.activo = False
+                    texto_respuesta_3.activo = False
+                    texto_respuesta_correcta.activo = True
+            
+            texto_pregunta.actualizar(event)
+            texto_respuesta_1.actualizar(event)
+            texto_respuesta_2.actualizar(event)
+            texto_respuesta_3.actualizar(event)
+            texto_respuesta_correcta.actualizar(event)
+
+        pantalla.fill(NEGRO)
+        
+        texto_pregunta.dibujar(pantalla)
+        texto_respuesta_1.dibujar(pantalla)
+        texto_respuesta_2.dibujar(pantalla)
+        texto_respuesta_3.dibujar(pantalla)
+        texto_respuesta_correcta.dibujar(pantalla)
+
+        pygame.draw.rect(pantalla, NEGRO, label_preguntas, 0, 0)
+        mostrar_texto(pantalla, 'Escriba la pregunta', fuente_juego, label_preguntas.center, BLANCO, None)
+        pygame.draw.rect(pantalla, NEGRO, label_respuestas_1, 0, 0)
+        mostrar_texto(pantalla, 'Respuesta Nro. 1', fuente_juego, label_respuestas_1.center, BLANCO, None)
+        pygame.draw.rect(pantalla, NEGRO, label_respuestas_2, 0, 0)
+        mostrar_texto(pantalla, 'Respuesta Nro. 2', fuente_juego, label_respuestas_2.center, BLANCO, None)
+        pygame.draw.rect(pantalla, NEGRO, label_respuestas_3, 0, 0)
+        mostrar_texto(pantalla, 'Respuesta Nro. 3', fuente_juego, label_respuestas_3.center, BLANCO, None)
+        pygame.draw.rect(pantalla, NEGRO, label_respuesta_correcta, 0, 0)
+        mostrar_texto(pantalla, 'Respuesta Correcta', fuente_juego, label_respuesta_correcta.center, BLANCO, None)
+
+        boton_cargar =  pygame.draw.rect(pantalla, VERDE_CLARO, bloque_cargar, 0, 10)
+        mostrar_texto(pantalla, 'CARGAR', fuente_continuar_fin_pregunta, boton_cargar.center, BLANCO, None)
+        boton_continuar = pygame.draw.rect(pantalla, VERDE_CLARO, bloque_continuar, 0, 10)
+        mostrar_texto(pantalla, 'VOLVER', fuente_continuar_fin_pregunta, bloque_continuar.center, BLANCO, None)
+
+        pygame.display.flip()
+
+
+
 def ejecutar_game_over():
     global escena
     global muteado
@@ -371,6 +567,8 @@ while funcionando:
             ejecutar_fin_pregunta()
         case 'Game Over':
             ejecutar_game_over()
+        case 'Preguntas':
+            ejecutar_preguntas()
 
 pygame.quit()
 sys.exit()
